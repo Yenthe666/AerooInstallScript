@@ -81,6 +81,4 @@ while true; do
     esac
 done
 
-# cd /opt/odoo/custom
-# sudo git clone -b master https://github.com/aeroo/aeroo_reports.git
 echo -e "\n >>>>>>>>>> PLEASE RESTART YOUR SERVER TO FINALISE THE INSTALLATION (See below for the command you should use) <<<<<<<<<<"
