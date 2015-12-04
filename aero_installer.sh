@@ -69,16 +69,7 @@ sudo service aeroo-docs restart
 
 # If you encounter and error "Unable to lock on the pidfile while trying #16 just restart the service (sudo service aeroo-docs restart).
 echo -e "\n---- Install Aeroo Reports Odoo Modules: ----"
-
-while true; do
-    read -p "Would you like to install Aeroo Reports Odoo modules for Odoo 8 (y/n)?" yn
-    case $yn in
-        [Yy]* ) cd $ODOO_LOCATION
-        sudo git clone -b master https://github.com/aeroo/aeroo_reports.git
-        break;;
-        [Nn]* ) break;;
-        * ) echo "Please answer yes or no.";;
-    esac
-done
+cd $ODOO_LOCATION
+sudo git clone -b master https://github.com/aeroo/aeroo_reports.git
 
 echo -e "\n >>>>>>>>>> PLEASE RESTART YOUR SERVER TO FINALISE THE INSTALLATION (See below for the command you should use) <<<<<<<<<<"
