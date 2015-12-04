@@ -73,8 +73,11 @@ cd /opt/aeroo
 #cd $ODOO_LOCATION
 sudo git clone -b master https://github.com/aeroo/aeroo_reports.git
 
-#Move in to the correct directory
+# Copy the correct directories
 sudo cp -r /opt/aeroo/aeroo_reports/report_aeroo /$ODOO_LOCATION
+sudo cp -r /opt/aeroo/aeroolib /$ODOO_LOCATION
 sudo chmod -R 777 /$ODOO_LOCATION/report_aeroo
+sudo chmod -R 777 /$ODOO_LOCATION/aeroolib
+
 
 echo -e "\n >>>>>>>>>> PLEASE RESTART YOUR SERVER TO FINALISE THE INSTALLATION (See below for the command you should use) <<<<<<<<<<"
