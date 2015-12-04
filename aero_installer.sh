@@ -1,5 +1,5 @@
-#Fill in the path to your Odoo here
-ODOO_LOCATION="/odoo9/odoo-server9"
+#Fill in the path to your Odoo addons folder here
+ODOO_LOCATION="/odoo/odoo-server/addons"
 
 # apt-get update
 sudo aptitude update && sudo aptitude full-upgrade -y
@@ -69,7 +69,12 @@ sudo service aeroo-docs restart
 
 # If you encounter and error "Unable to lock on the pidfile while trying #16 just restart the service (sudo service aeroo-docs restart).
 echo -e "\n---- Install Aeroo Reports Odoo Modules: ----"
-cd $ODOO_LOCATION
+cd /opt/aeroo
+#cd $ODOO_LOCATION
 sudo git clone -b master https://github.com/aeroo/aeroo_reports.git
+
+#Move in to the correct directory
+sudo cp -r /opt/aeroo/aeroo_reports/report_aeroo /$ODOO_LOCATION
+sudo chmod -R 777 /$ODOO_LOCATION/report_aeroo
 
 echo -e "\n >>>>>>>>>> PLEASE RESTART YOUR SERVER TO FINALISE THE INSTALLATION (See below for the command you should use) <<<<<<<<<<"
