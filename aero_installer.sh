@@ -3,6 +3,7 @@ ODOO_LOCATION="/odoo/odoo-server/addons"
 
 sudo apt-get update
 sudo apt-get upgrade -y
+sudo apt-get build-dep build-essential -y
 
 # Install Git:
 echo -e "\n---- Install Git ----"
