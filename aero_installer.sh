@@ -1,9 +1,8 @@
 #Fill in the path to your Odoo addons folder here
 ODOO_LOCATION="/odoo/odoo-server/addons"
 
-# apt-get update
-sudo aptitude update && sudo aptitude full-upgrade -y
-sudo apt-get build-dep build-essential -y
+sudo apt-get update
+sudo apt-get upgrade -y
 
 # Install Git:
 echo -e "\n---- Install Git ----"
@@ -13,6 +12,12 @@ sudo apt-get install git -y
 echo -e "\n---- Install AerooLib ----"
 sudo apt-get install python-genshi python-cairo python-lxml libreoffice-script-provider-python libreoffice-base python-cups -y
 sudo apt-get install python-setuptools python3-pip -yf
+
+#Check if /opt directory exists
+if [ ! -d "/opt" ]; then
+  # The folder doesn't exist - create it!
+  sudo mkdir "/opt" 
+fi
 sudo mkdir /opt/aeroo
 cd /opt/aeroo
 sudo git clone https://github.com/aeroo/aeroolib.git
