@@ -4,7 +4,7 @@
 # https://github.com/aeroo/aeroo_docs/wiki/Installation-example-for-Ubuntu-14.04-LTS
 
 # Location of Odoo and addons folder:
-ODOO_DIR=/odoo/odoo-server
+ODOO_DIR=/home/odoo/odoo
 ADDONS_DIR=$ODOO_DIR/addons
 
 # Where to install Aeroo files:
@@ -53,7 +53,9 @@ case "$1" in
       pip uninstall -qy aeroolib
       rm -rf "$LOH_DAEMON" "$LOH_PID"
       rm -rf "$AEROO_DIR" "$AER_DAEMON" "$AER_CONFIG" "$AER_PID"
-      rm -f  "$ADDONS_DIR/report_aeroo*" "$ADDONS_DIR/aeroolib"
+      for dir in "$ADDONS_DIR"/aeroolib "$ADDONS_DIR"/report_aeroo*; do
+        unlink $dir || rm -f $dir
+      done
       systemctl daemon-reload
     )
     printf -- "----\nDone\n"
@@ -189,7 +191,7 @@ service $AER_NAME start
 # Odoo modules
 printf "\nInstall Aeroo Reports Odoo Modules"
 printf "\n----------------------------------\n"
-for dir in "$AEROO_LIB" "$AEROO_DIR/aeroo_reports/report_aeroo*/"; do
+for dir in "$AEROO_LIB" "$AEROO_DIR/aeroo_reports/report_aeroo*"; do
   ln -sf -t "$ADDONS_DIR" $dir
   chown -R --reference="$ADDONS_DIR" $dir
 done
