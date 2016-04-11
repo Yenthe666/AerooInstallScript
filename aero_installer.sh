@@ -121,7 +121,7 @@ PORT=$LOH_PORT
 PIDFILE=$LOH_PID
 EOF
 cat << 'EOF' >> "$LOH_DAEMON"
-ARGS="--headless" --accept="socket,host=$HOST,port=$PORT,tcpNoDelay=1;urp;"
+ARGS="--headless --accept=socket,host=$HOST,port=$PORT,tcpNoDelay=1;urp;"
 
 # Include LSB functions.
 . /lib/lsb/init-functions
