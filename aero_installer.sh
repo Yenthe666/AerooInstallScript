@@ -1,89 +1,204 @@
-#Fill in the path to your Odoo addons folder here
-ODOO_LOCATION="/odoo/odoo-server/addons"
+#!/bin/sh
+# Installation script for Aeroo Reports, Library, and DOCS service.
+# This install script is partially based on instructions found here:
+# https://github.com/aeroo/aeroo_docs/wiki/Installation-example-for-Ubuntu-14.04-LTS 
 
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get build-dep build-essential -y
+# Location of Odoo addons folder:
+ODOO_DIR=/odoo/odoo-server/addons
 
-# Install Git:
-echo -e "\n---- Install Git ----"
-sudo apt-get install git -y
+# Where to install Aeroo:
+AEROO_DIR=/opt/aeroo
+AEROO_LIB=$AEROO_DIR/aeroolib
 
-# Install AerooLib:
-echo -e "\n---- Install AerooLib ----"
-sudo apt-get install python-genshi python-cairo python-lxml libreoffice-script-provider-python libreoffice-base python-cups -y
-sudo apt-get install python-setuptools python3-pip -yf
+# GIT repositories:
+AEROO_REPO=https://github.com/aeroo
+AEROO_V9_REPO=https://github.com/Yenthe666
+REPOS_V8="aeroolib aeroo_docs"
+REPOS_V9="aeroo_reports"
 
-#Check if /opt directory exists
-if [ ! -d "/opt" ]; then
-  # The folder doesn't exist - create it!
-  sudo mkdir "/opt" 
+# AerooDOCS settings:
+AER_NAME=aeroo-docs
+AER_DAEMON=/etc/init.d/$AER_NAME
+AER_CONFIG=/etc/$AER_NAME.conf
+AER_PID=/tmp/$AER_NAME.pid
+
+# LibreOffice Headless settings:
+LOH_NAME=libreoffice-headless
+LOH_DAEMON=/etc/init.d/$LOH_NAME
+LOH_PID=/var/run/$LOH_NAME.pid
+
+# The AerooDOCS config file must be manually updated to
+# reflect the values below if they are overwritten:
+LOH_HOST=localhost
+LOH_PORT=8100
+
+# Check for root privileges
+if [ $(id -u) -ne 0 ]; then
+  printf "Must be root to run this script"
+  exit 126
 fi
-sudo mkdir /opt/aeroo
-cd /opt/aeroo
-sudo git clone https://github.com/aeroo/aeroolib.git
-cd /opt/aeroo/aeroolib
-sudo python setup.py install
 
-#Create Init Script for OpenOffice (Headless Mode):
-echo -e "\n---- create init script for LibreOffice (Headless Mode) ----"
-sudo touch /etc/init.d/office
-sudo su root -c "echo '### BEGIN INIT INFO' >> /etc/init.d/office"
-sudo su root -c "echo '# Provides:          office' >> /etc/init.d/office"
-sudo su root -c "echo '# Required-Start:    $remote_fs $syslog' >> /etc/init.d/office"
-sudo su root -c "echo '# Required-Stop:     $remote_fs $syslog' >> /etc/init.d/office"
-sudo su root -c "echo '# Default-Start:     2 3 4 5' >> /etc/init.d/office"
-sudo su root -c "echo '# Default-Stop:      0 1 6' >> /etc/init.d/office"
-sudo su root -c "echo '# Short-Description: Start daemon at boot time' >> /etc/init.d/office"
-sudo su root -c "echo '# Description:       Enable service provided by daemon.' >> /etc/init.d/office"
-sudo su root -c "echo '### END INIT INFO' >> /etc/init.d/office"
-sudo su root -c "echo '#! /bin/sh' >> /etc/init.d/office"
-sudo su root -c "echo '/usr/bin/soffice --nologo --nofirststartwizard --headless --norestore --invisible \"--accept=socket,host=localhost,port=8100,tcpNoDelay=1;urp;\" &' >> /etc/init.d/office"
+# Uninstall option
+case "$1" in
+  -u|--uninstall)
+    printf -- "Uninstalling Aeroo...\n"
+    printf -- "---------------------\n"
+    (
+      set -x
+      service $LOH_NAME stop 
+      service $AER_NAME stop
+      update-rc.d -f $LOH_NAME remove
+      update-rc.d -f $AER_NAME remove
+      pip uninstall -qy aeroolib
+      rm -rf "$LOH_DAEMON" "$LOH_PID"
+      rm -rf "$AEROO_DIR" "$AER_DAEMON" "$AER_CONFIG" "$AER_PID"
+      rm -f  "$ODOO_DIR/report_aeroo*" "$ODOO_DIR/aeroolib"
+      systemctl daemon-reload
+    )
+    printf -- "----\nDone\n"
+    exit 0;;
+esac
 
-# Setup Permissions and test LibreOffice Headless mode connection
+# Dependencies
+printf "\nInstall Dependencies"
+printf "\n--------------------\n"
+apt-get -y build-dep build-essential
+apt-get -y install git python-setuptools python3-pip
+apt-get -y install python-genshi python-cairo python-lxml python-cups
+apt-get -y install libreoffice-script-provider-python libreoffice-base
+pip3 install --upgrade json-rpc-3 daemonize
 
-sudo chmod +x /etc/init.d/office
-sudo update-rc.d office defaults
+# GIT Repositories
+printf "\nClone Aeroo Repositories"
+printf "\n------------------------\n"
 
-# Install AerooDOCS
-echo -e "\n---- Install AerooDOCS (see: https://github.com/aeroo/aeroo_docs/wiki/Installation-example-for-Ubuntu-14.04-LTS for original post): ----"
+mkdir -p "$AEROO_DIR"; cd "$AEROO_DIR"
 
-sudo pip3 install jsonrpc2 daemonize
+clone() {
+  for repo in $2; do
+    if [ ! -e "$AEROO_DIR/$repo/.git" ]; then
+      git clone "$1/$repo.git"
+      if [ $? -ne 0 ]; then
+        exit $?
+      fi
+    fi
+  done
+}
 
-echo -e "\n---- create conf file for AerooDOCS ----"
-sudo touch /etc/aeroo-docs.conf
-sudo su root -c "echo '[start]' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo 'interface = localhost' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo 'port = 8989' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo 'oo-server = localhost' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo 'oo-port = 8100' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo 'spool-directory = /tmp/aeroo-docs' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo 'spool-expire = 1800' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo 'log-file = /var/log/aeroo-docs/aeroo_docs.log' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo 'pid-file = /tmp/aeroo-docs.pid' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo '[simple-auth]' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo 'username = anonymous' >> /etc/aeroo-docs.conf"
-sudo su root -c "echo 'password = anonymous' >> /etc/aeroo-docs.conf"
+clone "$AEROO_REPO" "$REPOS_V8"
+clone "$AEROO_V9_REPO" "$REPOS_V9"
 
-cd /opt/aeroo
-sudo git clone https://github.com/aeroo/aeroo_docs.git
-sudo touch /etc/init.d/office
-sudo python3 /opt/aeroo/aeroo_docs/aeroo-docs start -c /etc/aeroo-docs.conf
-sudo ln -s /opt/aeroo/aeroo_docs/aeroo-docs /etc/init.d/aeroo-docs
-sudo update-rc.d aeroo-docs defaults
-sudo service aeroo-docs restart
+# AerooLib
+printf "\nInstall AerooLib"
+printf "\n----------------\n"
 
-# If you encounter and error "Unable to lock on the pidfile while trying #16 just restart the service (sudo service aeroo-docs restart).
-echo -e "\n---- Install Aeroo Reports Odoo Modules: ----"
-cd /opt/aeroo
-#cd $ODOO_LOCATION
-sudo git clone -b master https://github.com/aeroo/aeroo_reports.git
+cd "$AEROO_LIB"
+python setup.py install clean
 
-# Copy the correct directories
-sudo cp -r /opt/aeroo/aeroo_reports/report_aeroo /$ODOO_LOCATION
-sudo cp -r /opt/aeroo/aeroolib /$ODOO_LOCATION
-sudo chmod -R 777 /$ODOO_LOCATION/report_aeroo
-sudo chmod -R 777 /$ODOO_LOCATION/aeroolib
+# LibreOffice Headless
+printf "\nSetup LibreOffice Headless Server"
+printf "\n---------------------------------\n"
 
+cat << EOF > "$LOH_DAEMON"
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          $LOH_NAME
+# Required-Start:    \$remote_fs \$syslog
+# Required-Stop:     \$remote_fs \$syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: LibreOffice-Headless daemon
+# Description:       LibreOffice-Headless daemon
+### END INIT INFO
 
-echo -e "\n >>>>>>>>>> PLEASE RESTART YOUR SERVER TO FINALISE THE INSTALLATION (See below for the command you should use) <<<<<<<<<<"
+NAME=\${0##*/}
+DAEMON=/usr/bin/soffice
+HOST=$LOH_HOST
+PORT=$LOH_PORT
+PIDFILE=$LOH_PID
+EOF
+cat << 'EOF' >> "$LOH_DAEMON"
+ARGS="--headless" --accept="socket,host=$HOST,port=$PORT,tcpNoDelay=1;urp;" 
+
+# Include LSB functions.
+. /lib/lsb/init-functions
+
+set -e
+case "$1" in
+  start)
+    log_daemon_msg "Starting $NAME server"
+    start-stop-daemon --start -bm -p "$PIDFILE" -x "$DAEMON" -- $ARGS
+    log_end_msg $?;;
+  stop)
+    log_daemon_msg "Stopping $NAME server"
+    start-stop-daemon --stop -v -p "$PIDFILE"
+    log_end_msg $?;;
+  force-reload|restart)
+    $NAME stop; $NAME start;;
+  status)
+    status_of_proc -p "$PIDFILE" "$DAEMON" $NAME && exit 0 || exit $?;;
+  *)
+    echo "Usage: /etc/init.d/$NAME {start|stop|restart|status}"
+    exit 1;;
+esac
+EOF
+
+chmod +x "$LOH_DAEMON"
+update-rc.d $LOH_NAME defaults
+service $LOH_NAME restart
+
+# AerooDOCS
+printf "\nSetup AerooDOCS Server"
+printf "\n----------------------\n"
+
+cat << EOF > "$AER_DAEMON"
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:		$AER_NAME
+# Required-Start:	$LOH_NAME
+# Required-Stop:	$LOH_NAME
+# Default-Start:	2 3 4 5
+# Default-Stop:		0 1 6
+# Short-Description:	AerooDOCS daemon
+# Description:		AerooDOCS daemon
+#			Document conversion server
+### END INIT INFO
+
+case "\$1" in
+  start|restart) CONFIG="-c $AER_CONFIG -f $AER_PID";;
+esac
+
+"$AEROO_DIR/aeroo_docs/aeroo-docs" "\$@" \$CONFIG && exit 0 || exit \$?
+EOF
+
+chmod +x "$AER_DAEMON"
+update-rc.d $AER_NAME defaults
+
+# The AerooDOCS program prompts the user to confirm the creation of a new
+# configuration file, so the init.d script needs to be started directly
+# with 'yes' piped in, but the mixed calls between the service command and
+# the direct init.d script results in locking problems with the pid file.
+# To avoid that situation, we ensure that service-initiated starts do not
+# run concurrently with direct calls to start the init.d script.
+service $AER_NAME stop
+yes | "$AER_DAEMON" restart
+"$AER_DAEMON" stop
+service $AER_NAME start
+
+# Odoo modules
+printf "\nInstall Aeroo Reports Odoo Modules"
+printf "\n----------------------------------\n"
+for dir in "$AEROO_LIB" "$AEROO_DIR/aeroo_reports/report_aeroo*/"; do
+  ln -sf -t "$ODOO_DIR" $dir
+  chown -R --reference="$ODOO_DIR" $dir
+done
+
+# Done
+cat << MSG
+
+>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<
+RESTART ODOO SERVER TO FINALIZE THE INSTALLATION
+>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<
+MSG
+
+exit 0
