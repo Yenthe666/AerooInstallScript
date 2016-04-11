@@ -2,7 +2,7 @@
 Installs Aeroo and makes the Aeroo reporting engine available in Odoo V9.
 
 #### Get the source
-Clone this repository
+Clone this repository:
 
 ```git clone https://github.com/osluys/AerooInstallScript.git```
 
