@@ -21,5 +21,5 @@ Edit the script and change the location of `ODOO_DIR` to your Odoo installation.
   1. Restart Odoo and update the _Apps_ list
   2. Install the _Aeroo Reports_ app
 
-#### Uninstall
+#### To uninstall
 ```sudo ./aero_installer.sh -u```
