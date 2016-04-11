@@ -1,12 +1,13 @@
 #!/bin/sh
 # Installation script for Aeroo Reports, Library, and DOCS service.
 # This install script is partially based on instructions found here:
-# https://github.com/aeroo/aeroo_docs/wiki/Installation-example-for-Ubuntu-14.04-LTS 
+# https://github.com/aeroo/aeroo_docs/wiki/Installation-example-for-Ubuntu-14.04-LTS
 
-# Location of Odoo addons folder:
-ODOO_DIR=/odoo/odoo-server/addons
+# Location of Odoo and addons folder:
+ODOO_DIR=/odoo/odoo-server
+ADDONS_DIR=$ODOO_DIR/addons
 
-# Where to install Aeroo:
+# Where to install Aeroo files:
 AEROO_DIR=/opt/aeroo
 AEROO_LIB=$AEROO_DIR/aeroolib
 
@@ -45,14 +46,14 @@ case "$1" in
     printf -- "---------------------\n"
     (
       set -x
-      service $LOH_NAME stop 
+      service $LOH_NAME stop
       service $AER_NAME stop
       update-rc.d -f $LOH_NAME remove
       update-rc.d -f $AER_NAME remove
       pip uninstall -qy aeroolib
       rm -rf "$LOH_DAEMON" "$LOH_PID"
       rm -rf "$AEROO_DIR" "$AER_DAEMON" "$AER_CONFIG" "$AER_PID"
-      rm -f  "$ODOO_DIR/report_aeroo*" "$ODOO_DIR/aeroolib"
+      rm -f  "$ADDONS_DIR/report_aeroo*" "$ADDONS_DIR/aeroolib"
       systemctl daemon-reload
     )
     printf -- "----\nDone\n"
@@ -118,7 +119,7 @@ PORT=$LOH_PORT
 PIDFILE=$LOH_PID
 EOF
 cat << 'EOF' >> "$LOH_DAEMON"
-ARGS="--headless" --accept="socket,host=$HOST,port=$PORT,tcpNoDelay=1;urp;" 
+ARGS="--headless" --accept="socket,host=$HOST,port=$PORT,tcpNoDelay=1;urp;"
 
 # Include LSB functions.
 . /lib/lsb/init-functions
@@ -189,8 +190,8 @@ service $AER_NAME start
 printf "\nInstall Aeroo Reports Odoo Modules"
 printf "\n----------------------------------\n"
 for dir in "$AEROO_LIB" "$AEROO_DIR/aeroo_reports/report_aeroo*/"; do
-  ln -sf -t "$ODOO_DIR" $dir
-  chown -R --reference="$ODOO_DIR" $dir
+  ln -sf -t "$ADDONS_DIR" $dir
+  chown -R --reference="$ADDONS_DIR" $dir
 done
 
 # Done
