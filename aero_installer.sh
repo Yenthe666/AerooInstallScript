@@ -114,7 +114,7 @@ cat << EOF > "$LOH_DAEMON"
 # Description:       LibreOffice-Headless daemon
 ### END INIT INFO
 
-NAME=\${0##*/}
+NAME=$LOH_NAME
 DAEMON=/usr/bin/soffice
 HOST=$LOH_HOST
 PORT=$LOH_PORT
@@ -157,14 +157,14 @@ printf "\n----------------------\n"
 cat << EOF > "$AER_DAEMON"
 #!/bin/sh
 ### BEGIN INIT INFO
-# Provides:		$AER_NAME
-# Required-Start:	$LOH_NAME
-# Required-Stop:	$LOH_NAME
-# Default-Start:	2 3 4 5
-# Default-Stop:		0 1 6
+# Provides:		        $AER_NAME
+# Required-Start:	    $LOH_NAME
+# Required-Stop:	    $LOH_NAME
+# Default-Start:	    2 3 4 5
+# Default-Stop:		    0 1 6
 # Short-Description:	AerooDOCS daemon
-# Description:		AerooDOCS daemon
-#			Document conversion server
+# Description:		    AerooDOCS daemon
+#			            Document conversion server
 ### END INIT INFO
 
 case "\$1" in
