@@ -69,6 +69,7 @@ apt-get -y build-dep build-essential
 apt-get -y install git python-setuptools python3-pip
 apt-get -y install python-genshi python-cairo python-lxml python-cups
 apt-get -y install libreoffice-script-provider-python libreoffice-base
+apt-get -y install libreoffice-core libreoffice-calc libreoffice-writer
 pip3 install --upgrade json-rpc-3 daemonize
 
 # GIT Repositories
