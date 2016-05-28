@@ -1,16 +1,25 @@
-# Aeroo installation script
-This script can be used to automatically create and configurate an Aeroo reporting server!
+# Aeroo Installation Script
+Installs Aeroo and makes the Aeroo reporting engine available in Odoo V9.
 
-<h4>1. Creating an installation file</h4>
-```sudo nano aero_installer.sh```
+#### Get the source
+Clone this repository:
 
-<h4>2. Configuring the installation script</h4>
-Paste the code from the script inside the file you've just created and fill in the variable ```ODOO_LOCATION``` at the first line of the script to the location of where you have an Odoo running.
-For example if you have an Odoo running under ```/odoo/odoo-server/``` you would fill in ```ODOO_LOCATION="/odoo/odoo-server/addons"```.
-Be sure to give the path up until in the addons folder!
+```git clone https://github.com/osluys/AerooInstallScript.git```
 
-<h4>2. Making the file executable</h4>
-```sudo chmod +x aero_installer.sh```
+or copy and paste the source to a file called _aero_installer.sh_.
 
-<h4>3. Executing the script</h4>
-```./aero_installer.sh ```
+#### Configure the install script
+Edit the script and change the location of `ODOO_DIR` to your Odoo installation.
+
+#### Make the script executable
+```chmod +x aero_installer.sh```
+
+#### Run the script
+```sudo ./aero_installer.sh ```
+
+#### Enable Aeroo reporting engine in Odoo
+  1. Restart Odoo and update the _Apps_ list
+  2. Install the _Aeroo Reports_ app
+
+#### To uninstall
+```sudo ./aero_installer.sh -u```
